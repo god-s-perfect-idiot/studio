@@ -186,7 +186,7 @@ export default function ActionBoard() {
           </div>
           <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="play-sound">Play button sound effect</Label>
-              <Select value={playSound} onValueChange={setPlaySound}>
+              <Select value={playSound} onValuechange={setPlaySound}>
                   <SelectTrigger id="play-sound">
                       <SelectValue placeholder="Select a sound" />
                   </SelectTrigger>
