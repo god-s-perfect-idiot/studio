@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -33,13 +33,19 @@ type Task = {
 };
 
 const initialTasks: Task[] = [
-  { id: 1, icon: '🎉', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
-  { id: 2, icon: '👍', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
-  { id: 3, icon: '🙌', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
-  { id: 4, icon: '✅', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 1, icon: '🚀', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 2, icon: '💡', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
+  { id: 3, icon: '🏆', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
+  { id: 4, icon: '🎯', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
 
-const audioFiles: string[] = [];
+const audioFiles: string[] = ['checkbox.mp3', 'play.mp3', 'celebration.mp3'];
+
+type SoundSettings = {
+  checkbox: string;
+  play: string;
+  celebration: string;
+};
 
 const ActionView = ({ onComplete }: { onComplete: () => void }) => (
   <div className="w-full max-w-md">
@@ -58,6 +64,13 @@ export default function ActionBoard() {
   const [activeView, setActiveView] = useState<'board' | 'action'>('board');
   const [currentActionTaskId, setCurrentActionTaskId] = useState<number | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [soundSettings, setSoundSettings] = useState<SoundSettings>({
+    checkbox: '',
+    play: '',
+    celebration: '',
+  });
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -66,27 +79,43 @@ export default function ActionBoard() {
       if (savedTasks) {
         setTasks(JSON.parse(savedTasks));
       }
+      const savedSounds = localStorage.getItem('soundSettings');
+      if (savedSounds) {
+        setSoundSettings(JSON.parse(savedSounds));
+      }
     } catch (error) {
-      console.error("Failed to parse tasks from localStorage", error);
+      console.error("Failed to parse from localStorage", error);
     }
   }, []);
 
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem('tasks', JSON.stringify(tasks));
+      localStorage.setItem('soundSettings', JSON.stringify(soundSettings));
     }
-  }, [tasks, isMounted]);
+  }, [tasks, soundSettings, isMounted]);
 
-  const handleTaskStateChange = (newTasks: Task[]) => {
-    setTasks(newTasks);
+  const playSound = (src: string) => {
+    if (src && audioRef.current) {
+      audioRef.current.src = `/${src}`;
+      audioRef.current.play().catch(e => console.error("Audio play failed: ", e));
+    }
   };
 
   const handleTaskCompletion = (taskId: number) => {
-    handleTaskStateChange(
-      tasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t))
-    );
-  };
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
 
+    if (task.type === 'checkbox') {
+      playSound(soundSettings.checkbox);
+    } else if (task.type === 'play') {
+      playSound(soundSettings.play);
+    }
+    
+    const newTasks = tasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t));
+    setTasks(newTasks);
+  };
+  
   const handleActionComplete = () => {
     if (currentActionTaskId) {
       handleTaskCompletion(currentActionTaskId);
@@ -106,10 +135,11 @@ export default function ActionBoard() {
   useEffect(() => {
     if (allTasksCompleted) {
       setShowConfetti(true);
+      playSound(soundSettings.celebration);
     } else {
       setShowConfetti(false);
     }
-  }, [allTasksCompleted]);
+  }, [allTasksCompleted, soundSettings.celebration]);
 
   const handleCheckboxClick = (taskId: number) => {
     const task = tasks.find((t) => t.id === taskId);
@@ -124,9 +154,12 @@ export default function ActionBoard() {
 
   const handleReset = () => {
     const resetTasks = initialTasks.map(task => ({ ...task, completed: false }));
-    localStorage.setItem('tasks', JSON.stringify(resetTasks));
     setTasks(resetTasks);
     setShowConfetti(false);
+  };
+
+  const handleSoundChange = (type: keyof SoundSettings, value: string) => {
+    setSoundSettings(prev => ({ ...prev, [type]: value }));
   };
 
   const renderTaskControl = (task: Task) => {
@@ -145,6 +178,7 @@ export default function ActionBoard() {
             borderColor
           )}
           aria-label={`Mark task '${task.label}' as complete`}
+          disabled={isCompleted}
         >
           <Check className={cn('h-6 w-6 stroke-[3]', iconColor)} />
         </Button>
@@ -184,6 +218,7 @@ export default function ActionBoard() {
   return (
     <div className="w-full max-w-md">
       {showConfetti && <Confetti />}
+       <audio ref={audioRef} />
       <div className="w-full max-w-md mb-4 px-2">
         <Progress value={progress} className="h-2 [&>div]:bg-accent bg-white" />
       </div>
@@ -212,7 +247,7 @@ export default function ActionBoard() {
         <div className="w-full max-w-md space-y-4">
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="checkbox-sound">Checkbox sound effect</Label>
-              <Select>
+              <Select value={soundSettings.checkbox} onValueChange={(value) => handleSoundChange('checkbox', value)}>
                 <SelectTrigger id="checkbox-sound" className="w-full bg-white">
                   <SelectValue placeholder="Select a sound" />
                 </SelectTrigger>
@@ -230,14 +265,14 @@ export default function ActionBoard() {
             </div>
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="play-sound">Play button sound effect</Label>
-              <Select>
+              <Select value={soundSettings.play} onValueChange={(value) => handleSoundChange('play', value)}>
                 <SelectTrigger id="play-sound" className="w-full bg-white">
                   <SelectValue placeholder="Select a sound" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Play Button Sounds</SelectLabel>
-                    {audioFiles.map((file) => (
+                     {audioFiles.map((file) => (
                       <SelectItem key={file} value={file}>
                         {file}
                       </SelectItem>
@@ -248,14 +283,14 @@ export default function ActionBoard() {
             </div>
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="celebration-sound">Routine celebration sound effect</Label>
-              <Select>
+              <Select value={soundSettings.celebration} onValueChange={(value) => handleSoundChange('celebration', value)}>
                 <SelectTrigger id="celebration-sound" className="w-full bg-white">
                   <SelectValue placeholder="Select a sound" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Celebration Sounds</SelectLabel>
-                    {audioFiles.map((file) => (
+                     {audioFiles.map((file) => (
                       <SelectItem key={file} value={file}>
                         {file}
                       </SelectItem>
