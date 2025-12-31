@@ -96,7 +96,8 @@ export default function ActionBoard() {
           <Card
             key={task.id}
             className={cn(
-              'flex items-center p-4 transition-all duration-300 shadow-md hover:shadow-lg w-full rounded-2xl bg-card'
+              'flex items-center p-4 transition-all duration-300 shadow-md hover:shadow-lg w-full rounded-2xl bg-card border-2',
+              task.completed ? 'border-accent' : 'border-transparent'
             )}
           >
             <div className="text-3xl mr-4 flex-shrink-0">{task.icon}</div>
