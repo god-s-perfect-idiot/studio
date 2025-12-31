@@ -30,11 +30,7 @@ const initialTasks: Task[] = [
   { id: 4, icon: '🎯', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
 
-const audioFiles = {
-  checkbox: ['checkbox-1.mp3', 'checkbox-2.mp3'],
-  play: ['play-1.mp3', 'play-2.mp3'],
-  celebration: ['celebration-1.mp3', 'celebration-2.mp3'],
-};
+const audioFileNames = ['celebration.mp3', 'check.mp3', 'ding.mp3', 'pencil.mp3', 'play.mp3', 'retro.mp3'];
 
 const ActionView = ({ onComplete }: { onComplete: () => void }) => (
   <div className="w-full max-w-md">
@@ -238,9 +234,9 @@ export default function ActionBoard() {
                   <SelectValue placeholder="Select sound" />
                 </SelectTrigger>
                 <SelectContent>
-                  {audioFiles.checkbox.map((file) => (
+                  {audioFileNames.map((file) => (
                     <SelectItem key={file} value={file}>
-                      {file}
+                      {file.replace('.mp3', '')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -253,9 +249,9 @@ export default function ActionBoard() {
                   <SelectValue placeholder="Select sound" />
                 </SelectTrigger>
                 <SelectContent>
-                  {audioFiles.play.map((file) => (
+                  {audioFileNames.map((file) => (
                     <SelectItem key={file} value={file}>
-                      {file}
+                      {file.replace('.mp3', '')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -268,9 +264,9 @@ export default function ActionBoard() {
                   <SelectValue placeholder="Select sound" />
                 </SelectTrigger>
                 <SelectContent>
-                  {audioFiles.celebration.map((file) => (
+                  {audioFileNames.map((file) => (
                     <SelectItem key={file} value={file}>
-                      {file}
+                      {file.replace('.mp3', '')}
                     </SelectItem>
                   ))}
                 </SelectContent>
