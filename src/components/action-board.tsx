@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -15,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import Link from 'next/link';
 
 type TaskType = 'checkbox' | 'play';
 type ActionType = 'toggle' | 'simple_action';
@@ -54,6 +56,19 @@ export default function ActionBoard() {
   const [playSound, setPlaySound] = useState(soundOptions[0].value);
   const [celebrationSound, setCelebrationSound] = useState(soundOptions[5].value);
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const completedTaskId = searchParams.get('completed_task');
+    if (completedTaskId) {
+      handleTaskCompletion(Number(completedTaskId), true);
+      // Clean up URL
+      router.replace('/', { scroll: false });
+    }
+  }, [searchParams, router]);
+
+
   useEffect(() => {
     setAudio(new Audio());
   }, []);
@@ -80,20 +95,28 @@ export default function ActionBoard() {
       setShowConfetti(false);
     }
   }, [allTasksCompleted, celebrationSound, playSoundEffect]);
-
-  const handleTaskClick = (taskId: number) => {
+  
+  const handleTaskCompletion = (taskId: number, silent = false) => {
     const task = tasks.find((t) => t.id === taskId);
-    if (!task || task.completed) return;
+    if (!task) return;
 
-    if (task.type === 'checkbox') {
-        playSoundEffect(checkboxSound);
-    } else if (task.type === 'play') {
-        playSoundEffect(playSound);
+    if (!silent) {
+        if (task.type === 'checkbox') {
+            playSoundEffect(checkboxSound);
+        } else if (task.type === 'play') {
+            playSoundEffect(playSound);
+        }
     }
 
     setTasks((prevTasks) =>
-      prevTasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t))
+        prevTasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t))
     );
+  };
+
+  const handleCheckboxClick = (taskId: number) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task || task.completed) return;
+    handleTaskCompletion(taskId);
   };
 
   const handleReset = () => {
@@ -110,7 +133,7 @@ export default function ActionBoard() {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => handleTaskClick(task.id)}
+          onClick={() => handleCheckboxClick(task.id)}
           className={cn(
             'h-10 w-10 rounded-lg border-[3px] flex-shrink-0 bg-white hover:bg-primary/10',
             borderColor,
@@ -123,11 +146,10 @@ export default function ActionBoard() {
       );
     }
 
-    return (
-      <Button
+    const control = (
+       <Button
         variant="outline"
         size="icon"
-        onClick={() => handleTaskClick(task.id)}
         disabled={isCompleted}
         className={cn('h-10 w-10 rounded-full border-[3px] flex-shrink-0 bg-white hover:bg-primary/10', borderColor, isCompleted && 'border-accent bg-accent/10 hover:bg-accent/20')}
         aria-label={`Execute task '${task.label}'`}
@@ -138,7 +160,17 @@ export default function ActionBoard() {
           <Play className={cn('h-6 w-6 stroke-[3]', iconColor, 'ml-1')} />
         )}
       </Button>
-    );
+    )
+
+    if(isCompleted) {
+        return control;
+    }
+
+    return (
+        <Link href={`/action/${task.id}`}>
+            {control}
+        </Link>
+    )
   };
 
   return (
@@ -174,7 +206,7 @@ export default function ActionBoard() {
           <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="checkbox-sound">Checkbox sound effect</Label>
               <Select value={checkboxSound} onValueChange={setCheckboxSound}>
-                  <SelectTrigger id="checkbox-sound">
+                  <SelectTrigger id="checkbox-sound" className="bg-white">
                       <SelectValue placeholder="Select a sound" />
                   </SelectTrigger>
                   <SelectContent>
@@ -187,7 +219,7 @@ export default function ActionBoard() {
           <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="play-sound">Play button sound effect</Label>
               <Select value={playSound} onValuechange={setPlaySound}>
-                  <SelectTrigger id="play-sound">
+                  <SelectTrigger id="play-sound" className="bg-white">
                       <SelectValue placeholder="Select a sound" />
                   </SelectTrigger>
                   <SelectContent>
@@ -200,7 +232,7 @@ export default function ActionBoard() {
           <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="celebration-sound">Routine celebration sound effect</Label>
               <Select value={celebrationSound} onValueChange={setCelebrationSound}>
-                  <SelectTrigger id="celebration-sound">
+                  <SelectTrigger id="celebration-sound" className="bg-white">
                       <SelectValue placeholder="Select a sound" />
                   </SelectTrigger>
                   <SelectContent>
