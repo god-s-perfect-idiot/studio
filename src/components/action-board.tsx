@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Check, Play } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import Confetti from '@/components/confetti';
 
 type TaskType = 'checkbox' | 'play';
 type ActionType = 'toggle' | 'simple_action';
@@ -30,11 +31,22 @@ const initialTasks: Task[] = [
 
 export default function ActionBoard() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const progress = useMemo(() => {
     const completedCount = tasks.filter((t) => t.completed).length;
     return (completedCount / tasks.length) * 100;
   }, [tasks]);
+  
+  const allTasksCompleted = useMemo(() => tasks.every(t => t.completed), [tasks]);
+
+  useEffect(() => {
+    if (allTasksCompleted) {
+      setShowConfetti(true);
+    } else {
+      setShowConfetti(false);
+    }
+  }, [allTasksCompleted]);
 
   const handleTaskClick = (taskId: number) => {
     const task = tasks.find((t) => t.id === taskId);
@@ -92,6 +104,7 @@ export default function ActionBoard() {
 
   return (
     <div className="w-full max-w-md">
+       {showConfetti && <Confetti />}
        <div className="w-full max-w-md mb-4 px-2">
         <Progress value={progress} className="h-2 [&>div]:bg-accent" />
       </div>
