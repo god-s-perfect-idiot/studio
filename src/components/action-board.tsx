@@ -1,13 +1,21 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Check, Play } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import Confetti from '@/components/confetti';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type TaskType = 'checkbox' | 'play';
 type ActionType = 'toggle' | 'simple_action';
@@ -23,24 +31,17 @@ type Task = {
 };
 
 const initialTasks: Task[] = [
-  { id: 1, icon: '🎉', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
-  { id: 2, icon: '🍿', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
-  { id: 3, icon: '🎵', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
-  { id: 4, icon: '📖', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 1, icon: '🚀', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 2, icon: '✨', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
+  { id: 3, icon: '🎶', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
+  { id: 4, icon: '📚', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
 
-const getInitialTasks = (): Task[] => {
-  if (typeof window === 'undefined') {
-    return initialTasks;
-  }
-  const savedTasks = localStorage.getItem('tasks');
-  return savedTasks ? JSON.parse(savedTasks) : initialTasks;
-};
 
 const ActionView = ({ onComplete }: { onComplete: () => void }) => (
   <div className="w-full max-w-md">
     <Card className="bg-white">
-      <CardContent className="h-64"></CardContent>
+      <CardContent className="h-64 p-6"></CardContent>
     </Card>
     <div className="mt-4 flex justify-end">
       <Button onClick={onComplete}>Complete Action</Button>
@@ -49,17 +50,25 @@ const ActionView = ({ onComplete }: { onComplete: () => void }) => (
 );
 
 export default function ActionBoard() {
-  const [tasks, setTasks] = useState<Task[]>(getInitialTasks);
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [showConfetti, setShowConfetti] = useState(false);
   const [activeView, setActiveView] = useState<'board' | 'action'>('board');
   const [currentActionTaskId, setCurrentActionTaskId] = useState<number | null>(null);
-
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }, [tasks]);
+    setIsMounted(true);
+    const savedTasks = localStorage.getItem('tasks');
+    if (savedTasks) {
+      setTasks(JSON.parse(savedTasks));
+    }
+  }, []);
+  
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+  }, [tasks, isMounted]);
 
   const handleTaskStateChange = (newTasks: Task[]) => {
     setTasks(newTasks);
@@ -87,12 +96,12 @@ export default function ActionBoard() {
   const allTasksCompleted = useMemo(() => tasks.every(t => t.completed), [tasks]);
 
   useEffect(() => {
-    if (allTasksCompleted) {
+    if (allTasksCompleted && isMounted) {
       setShowConfetti(true);
     } else {
       setShowConfetti(false);
     }
-  }, [allTasksCompleted]);
+  }, [allTasksCompleted, isMounted]);
 
   const handleCheckboxClick = (taskId: number) => {
     const task = tasks.find((t) => t.id === taskId);
@@ -155,6 +164,10 @@ export default function ActionBoard() {
       </Button>
     )
   };
+  
+  if (!isMounted) {
+    return null;
+  }
 
   if (activeView === 'action') {
     return <ActionView onComplete={handleActionComplete} />;
@@ -177,7 +190,7 @@ export default function ActionBoard() {
           >
             <div className="text-3xl mr-4 flex-shrink-0">{task.icon}</div>
             <div className="flex-grow">
-              <div className="text-sm text-gray-600">{task.title}</div>
+              <div className="text-sm text-muted-foreground">{task.title}</div>
               <div className="text-lg font-bold">{task.label}</div>
             </div>
             {renderTaskControl(task)}
@@ -188,6 +201,38 @@ export default function ActionBoard() {
         <Button onClick={handleReset} variant="default" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 rounded-lg text-lg">
           Reset Routine
         </Button>
+        <div className="w-full max-w-md space-y-4">
+            <Select>
+              <SelectTrigger className="w-full bg-white">
+                <SelectValue placeholder="Checkbox sound effect" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Checkbox Sounds</SelectLabel>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <Select>
+              <SelectTrigger className="w-full bg-white">
+                <SelectValue placeholder="Play button sound effect" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Play Button Sounds</SelectLabel>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <Select>
+              <SelectTrigger className="w-full bg-white">
+                <SelectValue placeholder="Routine celebration sound effect" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Celebration Sounds</SelectLabel>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+        </div>
       </div>
     </div>
   );
