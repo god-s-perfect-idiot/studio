@@ -22,10 +22,10 @@ type Task = {
 };
 
 const initialTasks: Task[] = [
-  { id: 1, icon: '➡', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
-  { id: 2, icon: '✍️', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
-  { id: 3, icon: '✍️', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
-  { id: 4, icon: '➡', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 1, icon: '🧠', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 2, icon: '💪', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
+  { id: 3, icon: '🧘', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
+  { id: 4, icon: '🚀', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
 
 
