@@ -30,7 +30,7 @@ const initialTasks: Task[] = [
   { id: 4, icon: '🎯', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
 
-const audioFileNames = ['celebration.mp3', 'check.mp3', 'ding.mp3', 'pencil.mp3', 'play.mp3', 'retro.mp3'];
+const audioFileNames = ['celebration.mp3', 'check.mp3', 'ding.mp3', 'pencil.mp3', 'play.mp3', 'retro.mp3', 'flourish.mp3', 'game.mp3', 'grow.mp3', 'tick.mp3'];
 
 const ActionView = ({ onComplete }: { onComplete: () => void }) => (
   <div className="w-full max-w-md">
