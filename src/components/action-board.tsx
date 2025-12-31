@@ -41,7 +41,7 @@ export default function ActionBoard() {
 
   const renderTaskControl = (task: Task) => {
     const isCompleted = task.completed;
-    const iconColor = isCompleted ? 'text-green-500' : 'text-primary';
+    const iconColor = isCompleted ? 'text-accent' : 'text-primary';
 
     if (task.type === 'checkbox') {
       return (
@@ -50,8 +50,8 @@ export default function ActionBoard() {
           checked={isCompleted}
           onCheckedChange={() => handleTaskClick(task.id)}
           className={cn(
-            'h-6 w-6 rounded-md border-2 data-[state=checked]:bg-transparent data-[state=checked]:border-green-500',
-            isCompleted ? 'border-green-500' : 'border-primary'
+            'h-6 w-6 rounded-md border-2 data-[state=checked]:bg-transparent data-[state=checked]:border-accent',
+            isCompleted ? 'border-accent' : 'border-primary'
           )}
           aria-label={`Mark task '${task.label}' as complete`}
         >
@@ -68,7 +68,7 @@ export default function ActionBoard() {
         size="icon"
         onClick={() => handleTaskClick(task.id)}
         disabled={isCompleted}
-        className={cn('h-10 w-10 rounded-full border-2', isCompleted && 'border-green-500 bg-green-500/10')}
+        className={cn('h-10 w-10 rounded-full border-2', isCompleted && 'border-accent bg-accent/10')}
         aria-label={`Execute task '${task.label}'`}
       >
         {isCompleted ? (
@@ -88,7 +88,7 @@ export default function ActionBoard() {
           key={task.id}
           className={cn(
             'flex items-center justify-between p-4 transition-all duration-300 shadow-lg hover:shadow-xl w-full max-w-md mb-4',
-            task.completed && 'border-green-400 ring-2 ring-green-400'
+            task.completed && 'border-accent ring-2 ring-accent'
           )}
         >
           <label
