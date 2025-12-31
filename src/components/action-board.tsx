@@ -73,7 +73,7 @@ export default function ActionBoard() {
           size="icon"
           onClick={() => handleTaskClick(task.id)}
           className={cn(
-            'h-10 w-10 rounded-lg border-2 flex-shrink-0',
+            'h-10 w-10 rounded-lg border-2 flex-shrink-0 bg-white',
             borderColor,
             isCompleted && 'bg-accent/10'
           )}
@@ -90,7 +90,7 @@ export default function ActionBoard() {
         size="icon"
         onClick={() => handleTaskClick(task.id)}
         disabled={isCompleted}
-        className={cn('h-10 w-10 rounded-full border-2 flex-shrink-0', borderColor, isCompleted && 'border-accent bg-accent/10')}
+        className={cn('h-10 w-10 rounded-full border-2 flex-shrink-0 bg-white', borderColor, isCompleted && 'border-accent bg-accent/10')}
         aria-label={`Execute task '${task.label}'`}
       >
         {isCompleted ? (
@@ -106,7 +106,7 @@ export default function ActionBoard() {
     <div className="w-full max-w-md">
        {showConfetti && <Confetti />}
        <div className="w-full max-w-md mb-4 px-2">
-        <Progress value={progress} className="h-2 [&>div]:bg-accent" />
+        <Progress value={progress} className="h-2 [&>div]:bg-accent bg-white" />
       </div>
       <div className="space-y-3">
         {tasks.map((task) => (
@@ -127,7 +127,7 @@ export default function ActionBoard() {
         ))}
       </div>
       <div className="mt-8 text-center">
-        <Button onClick={handleReset} variant="default">
+        <Button onClick={handleReset} variant="default" className="bg-primary/90 text-primary-foreground hover:bg-primary/80 px-8 py-3 rounded-lg text-lg">
           Reset Routine
         </Button>
       </div>
