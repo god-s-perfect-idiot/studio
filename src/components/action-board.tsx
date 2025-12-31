@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -10,9 +10,7 @@ import Confetti from '@/components/confetti';
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -32,16 +30,40 @@ type Task = {
 };
 
 const initialTasks: Task[] = [
-  { id: 1, icon: '🎉', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
-  { id: 2, icon: '🎶', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
-  { id: 3, icon: '📸', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
-  { id: 4, icon: '💡', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 1, icon: '🚀', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 2, icon: '📝', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
+  { id: 3, icon: '🎨', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
+  { id: 4, icon: '🌟', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
 
+const soundOptions = [
+    { value: '/mp3s/bell.mp3', label: 'Bell' },
+    { value: '/mp3s/click.mp3', label: 'Click' },
+    { value: '/mp3s/chime.mp3', label: 'Chime' },
+    { value: '/mp3s/ding.mp3', label: 'Ding' },
+    { value: '/mp3s/success.mp3', label: 'Success' },
+    { value: '/mp3s/fanfare.mp3', label: 'Fanfare' },
+];
 
 export default function ActionBoard() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  
+  const [checkboxSound, setCheckboxSound] = useState(soundOptions[1].value);
+  const [playSound, setPlaySound] = useState(soundOptions[0].value);
+  const [celebrationSound, setCelebrationSound] = useState(soundOptions[5].value);
+
+  useEffect(() => {
+    setAudio(new Audio());
+  }, []);
+
+  const playSoundEffect = useCallback((soundUrl: string) => {
+    if (audio && soundUrl) {
+      audio.src = soundUrl;
+      audio.play().catch(error => console.error("Audio play failed:", error));
+    }
+  }, [audio]);
 
   const progress = useMemo(() => {
     const completedCount = tasks.filter((t) => t.completed).length;
@@ -53,14 +75,21 @@ export default function ActionBoard() {
   useEffect(() => {
     if (allTasksCompleted) {
       setShowConfetti(true);
+      playSoundEffect(celebrationSound);
     } else {
       setShowConfetti(false);
     }
-  }, [allTasksCompleted]);
+  }, [allTasksCompleted, celebrationSound, playSoundEffect]);
 
   const handleTaskClick = (taskId: number) => {
     const task = tasks.find((t) => t.id === taskId);
     if (!task || task.completed) return;
+
+    if (task.type === 'checkbox') {
+        playSoundEffect(checkboxSound);
+    } else if (task.type === 'play') {
+        playSoundEffect(playSound);
+    }
 
     setTasks((prevTasks) =>
       prevTasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t))
@@ -144,34 +173,40 @@ export default function ActionBoard() {
         <div className="w-full space-y-4">
           <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="checkbox-sound">Checkbox sound effect</Label>
-              <Select>
+              <Select value={checkboxSound} onValueChange={setCheckboxSound}>
                   <SelectTrigger id="checkbox-sound">
                       <SelectValue placeholder="Select a sound" />
                   </SelectTrigger>
                   <SelectContent>
-                      {/* Options will be added later */}
+                      {soundOptions.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
                   </SelectContent>
               </Select>
           </div>
           <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="play-sound">Play button sound effect</Label>
-              <Select>
+              <Select value={playSound} onValueChange={setPlaySound}>
                   <SelectTrigger id="play-sound">
                       <SelectValue placeholder="Select a sound" />
                   </SelectTrigger>
                   <SelectContent>
-                      {/* Options will be added later */}
+                      {soundOptions.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
                   </SelectContent>
               </Select>
           </div>
           <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="celebration-sound">Routine celebration sound effect</Label>
-              <Select>
+              <Select value={celebrationSound} onValueChange={setCelebrationSound}>
                   <SelectTrigger id="celebration-sound">
                       <SelectValue placeholder="Select a sound" />
                   </SelectTrigger>
                   <SelectContent>
-                      {/* Options will be added later */}
+                      {soundOptions.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
                   </SelectContent>
               </Select>
           </div>
