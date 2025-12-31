@@ -3,8 +3,6 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import Confetti from '@/components/confetti';
 import { cn } from '@/lib/utils';
 import { Check, Play } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +12,8 @@ type ActionType = 'toggle' | 'simple_action';
 
 type Task = {
   id: number;
+  icon: string;
+  title: string;
   label: string;
   type: TaskType;
   action: ActionType;
@@ -21,15 +21,15 @@ type Task = {
 };
 
 const initialTasks: Task[] = [
-  { id: 1, label: 'Review project requirements', type: 'checkbox', action: 'toggle', completed: false },
-  { id: 2, label: 'Set up development environment', type: 'checkbox', action: 'toggle', completed: false },
-  { id: 4, label: 'Initiate final review', type: 'play', action: 'simple_action', completed: false },
+  { id: 1, icon: '➡', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 2, icon: '✍️', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
+  { id: 3, icon: '✍️', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
+  { id: 4, icon: '➡', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
+
 
 export default function ActionBoard() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
-
-  const allTasksComplete = useMemo(() => tasks.every((task) => task.completed), [tasks]);
 
   const progress = useMemo(() => {
     const completedCount = tasks.filter((t) => t.completed).length;
@@ -48,23 +48,23 @@ export default function ActionBoard() {
   const renderTaskControl = (task: Task) => {
     const isCompleted = task.completed;
     const iconColor = isCompleted ? 'text-accent' : 'text-primary';
+    const borderColor = isCompleted ? 'border-accent' : 'border-primary';
 
     if (task.type === 'checkbox') {
       return (
-        <Checkbox
-          id={`task-${task.id}`}
-          checked={isCompleted}
-          onCheckedChange={() => handleTaskClick(task.id)}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => handleTaskClick(task.id)}
           className={cn(
-            'h-6 w-6 rounded-md border-2 data-[state=checked]:bg-transparent data-[state=checked]:border-accent',
-            isCompleted ? 'border-accent' : 'border-primary'
+            'h-10 w-10 rounded-lg border-2 flex-shrink-0',
+            borderColor,
+            isCompleted && 'bg-accent/10'
           )}
           aria-label={`Mark task '${task.label}' as complete`}
         >
-          <Checkbox.Indicator>
-            <Check className={cn('h-5 w-5', iconColor)} />
-          </Checkbox.Indicator>
-        </Checkbox>
+          <Check className={cn('h-5 w-5', iconColor)} />
+        </Button>
       );
     }
 
@@ -74,44 +74,40 @@ export default function ActionBoard() {
         size="icon"
         onClick={() => handleTaskClick(task.id)}
         disabled={isCompleted}
-        className={cn('h-10 w-10 rounded-full border-2', isCompleted && 'border-accent bg-accent/10')}
+        className={cn('h-10 w-10 rounded-full border-2 flex-shrink-0', borderColor, isCompleted && 'border-accent bg-accent/10')}
         aria-label={`Execute task '${task.label}'`}
       >
         {isCompleted ? (
           <Check className={cn('h-5 w-5', iconColor)} />
         ) : (
-          <Play className={cn('h-5 w-5', iconColor)} />
+          <Play className={cn('h-5 w-5', iconColor, 'ml-1')} />
         )}
       </Button>
     );
   };
 
   return (
-    <>
-      {allTasksComplete && <Confetti />}
-      <div className="w-full max-w-md mb-4">
-        <Progress value={progress} className="[&>div]:bg-accent" />
+    <div className="w-full max-w-md">
+       <div className="w-full max-w-md mb-4 px-2">
+        <Progress value={progress} className="h-2 [&>div]:bg-accent" />
       </div>
-      {tasks.map((task) => (
-        <Card
-          key={task.id}
-          className={cn(
-            'flex items-center justify-between p-4 transition-all duration-300 shadow-lg hover:shadow-xl w-full max-w-md mb-4',
-            task.completed && 'border-accent ring-2 ring-accent'
-          )}
-        >
-          <label
-            htmlFor={`task-${task.id}`}
+      <div className="space-y-3">
+        {tasks.map((task) => (
+          <Card
+            key={task.id}
             className={cn(
-              'flex-grow text-base md:text-lg pl-4 font-medium cursor-pointer',
-              task.completed && 'line-through text-muted-foreground'
+              'flex items-center p-4 transition-all duration-300 shadow-md hover:shadow-lg w-full rounded-2xl bg-card'
             )}
           >
-            {task.label}
-          </label>
-          {renderTaskControl(task)}
-        </Card>
-      ))}
-    </>
+            <div className="text-3xl mr-4 flex-shrink-0">{task.icon}</div>
+            <div className="flex-grow">
+              <div className="text-sm text-muted-foreground">{task.title}</div>
+              <div className="text-lg font-bold">{task.label}</div>
+            </div>
+            {renderTaskControl(task)}
+          </Card>
+        ))}
+      </div>
+    </div>
   );
 }
