@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Label } from "@/components/ui/label";
+
 
 type TaskType = 'checkbox' | 'play';
 type ActionType = 'toggle' | 'simple_action';
@@ -64,9 +66,13 @@ export default function ActionBoard() {
 
   useEffect(() => {
     setIsMounted(true);
-    const savedTasks = localStorage.getItem('tasks');
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks));
+    try {
+      const savedTasks = localStorage.getItem('tasks');
+      if (savedTasks) {
+        setTasks(JSON.parse(savedTasks));
+      }
+    } catch (error) {
+      console.error("Failed to parse tasks from localStorage", error);
     }
   }, []);
 
@@ -209,51 +215,60 @@ export default function ActionBoard() {
           Reset Routine
         </Button>
         <div className="w-full max-w-md space-y-4">
-            <Select>
-              <SelectTrigger className="w-full bg-white">
-                <SelectValue placeholder="Checkbox sound effect" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Checkbox Sounds</SelectLabel>
-                  {audioFiles.map((file) => (
-                    <SelectItem key={file} value={file}>
-                      {file}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <Select>
-              <SelectTrigger className="w-full bg-white">
-                <SelectValue placeholder="Play button sound effect" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Play Button Sounds</SelectLabel>
-                  {audioFiles.map((file) => (
-                    <SelectItem key={file} value={file}>
-                      {file}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <Select>
-              <SelectTrigger className="w-full bg-white">
-                <SelectValue placeholder="Routine celebration sound effect" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Celebration Sounds</SelectLabel>
-                  {audioFiles.map((file) => (
-                    <SelectItem key={file} value={file}>
-                      {file}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="checkbox-sound">Checkbox sound effect</Label>
+              <Select>
+                <SelectTrigger id="checkbox-sound" className="w-full bg-white">
+                  <SelectValue placeholder="Select a sound" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Checkbox Sounds</SelectLabel>
+                    {audioFiles.map((file) => (
+                      <SelectItem key={file} value={file}>
+                        {file}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="play-sound">Play button sound effect</Label>
+              <Select>
+                <SelectTrigger id="play-sound" className="w-full bg-white">
+                  <SelectValue placeholder="Select a sound" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Play Button Sounds</SelectLabel>
+                    {audioFiles.map((file) => (
+                      <SelectItem key={file} value={file}>
+                        {file}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="celebration-sound">Routine celebration sound effect</Label>
+              <Select>
+                <SelectTrigger id="celebration-sound" className="w-full bg-white">
+                  <SelectValue placeholder="Select a sound" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Celebration Sounds</SelectLabel>
+                    {audioFiles.map((file) => (
+                      <SelectItem key={file} value={file}>
+                        {file}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
         </div>
       </div>
     </div>
