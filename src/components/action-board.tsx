@@ -127,7 +127,7 @@ export default function ActionBoard() {
         ))}
       </div>
       <div className="mt-8 text-center">
-        <Button onClick={handleReset} variant="default" className="bg-primary/90 text-primary-foreground hover:bg-primary/80 px-8 py-3 rounded-lg text-lg">
+        <Button onClick={handleReset} variant="default" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 rounded-lg text-lg">
           Reset Routine
         </Button>
       </div>
