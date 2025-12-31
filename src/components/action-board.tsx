@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Confetti from '@/components/confetti';
 import { cn } from '@/lib/utils';
 import { Check, Play } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 type TaskType = 'checkbox' | 'play';
 type ActionType = 'toggle' | 'simple_action';
@@ -29,6 +30,11 @@ export default function ActionBoard() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
   const allTasksComplete = useMemo(() => tasks.every((task) => task.completed), [tasks]);
+
+  const progress = useMemo(() => {
+    const completedCount = tasks.filter((t) => t.completed).length;
+    return (completedCount / tasks.length) * 100;
+  }, [tasks]);
 
   const handleTaskClick = (taskId: number) => {
     const task = tasks.find((t) => t.id === taskId);
@@ -83,6 +89,9 @@ export default function ActionBoard() {
   return (
     <>
       {allTasksComplete && <Confetti />}
+      <div className="w-full max-w-md mb-4">
+        <Progress value={progress} className="[&>div]:bg-accent" />
+      </div>
       {tasks.map((task) => (
         <Card
           key={task.id}
