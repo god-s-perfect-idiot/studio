@@ -119,7 +119,7 @@ export default function ActionBoard() {
           >
             <div className="text-3xl mr-4 flex-shrink-0">{task.icon}</div>
             <div className="flex-grow">
-              <div className="text-sm text-muted-foreground">{task.title}</div>
+              <div className="text-sm text-gray-600">{task.title}</div>
               <div className="text-lg font-bold">{task.label}</div>
             </div>
             {renderTaskControl(task)}
