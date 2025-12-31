@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Check, Play } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import Confetti from '@/components/confetti';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 type TaskType = 'checkbox' | 'play';
 type ActionType = 'toggle' | 'simple_action';
@@ -28,6 +30,12 @@ const initialTasks: Task[] = [
   { id: 4, icon: '🎯', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
 
+const audioFiles = {
+  checkbox: ['checkbox-1.mp3', 'checkbox-2.mp3'],
+  play: ['play-1.mp3', 'play-2.mp3'],
+  celebration: ['celebration-1.mp3', 'celebration-2.mp3'],
+};
+
 const ActionView = ({ onComplete }: { onComplete: () => void }) => (
   <div className="w-full max-w-md">
     <Card className="bg-white">
@@ -46,6 +54,12 @@ export default function ActionBoard() {
   const [currentActionTaskId, setCurrentActionTaskId] = useState<number | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
+  const [checkboxSound, setCheckboxSound] = useState<string>('');
+  const [playSound, setPlaySound] = useState<string>('');
+  const [celebrationSound, setCelebrationSound] = useState<string>('');
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   useEffect(() => {
     setIsMounted(true);
     try {
@@ -53,25 +67,49 @@ export default function ActionBoard() {
       if (savedTasks) {
         setTasks(JSON.parse(savedTasks));
       }
+      const savedCheckboxSound = localStorage.getItem('checkboxSound');
+      if (savedCheckboxSound) setCheckboxSound(savedCheckboxSound);
+
+      const savedPlaySound = localStorage.getItem('playSound');
+      if (savedPlaySound) setPlaySound(savedPlaySound);
+
+      const savedCelebrationSound = localStorage.getItem('celebrationSound');
+      if (savedCelebrationSound) setCelebrationSound(savedCelebrationSound);
+
     } catch (error) {
       console.error("Failed to parse from localStorage", error);
+      setTasks(initialTasks);
     }
   }, []);
 
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem('tasks', JSON.stringify(tasks));
+      if (checkboxSound) localStorage.setItem('checkboxSound', checkboxSound);
+      if (playSound) localStorage.setItem('playSound', playSound);
+      if (celebrationSound) localStorage.setItem('celebrationSound', celebrationSound);
     }
-  }, [tasks, isMounted]);
+  }, [tasks, checkboxSound, playSound, celebrationSound, isMounted]);
 
-  const handleTaskCompletion = (taskId: number) => {
+  const playAudio = (soundFile: string) => {
+    if (typeof window !== 'undefined' && soundFile) {
+        if (!audioRef.current) {
+            audioRef.current = new Audio();
+        }
+        audioRef.current.src = `/${soundFile}`;
+        audioRef.current.play().catch(error => console.error("Audio play failed:", error));
+    }
+  };
+
+  const handleTaskCompletion = (taskId: number, sound?: string) => {
     const newTasks = tasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t));
     setTasks(newTasks);
+    if(sound) playAudio(sound);
   };
   
   const handleActionComplete = () => {
     if (currentActionTaskId) {
-      handleTaskCompletion(currentActionTaskId);
+      handleTaskCompletion(currentActionTaskId, playSound);
     }
     setCurrentActionTaskId(null);
     setActiveView('board');
@@ -88,15 +126,16 @@ export default function ActionBoard() {
   useEffect(() => {
     if (allTasksCompleted) {
       setShowConfetti(true);
+      playAudio(celebrationSound);
     } else {
       setShowConfetti(false);
     }
-  }, [allTasksCompleted]);
+  }, [allTasksCompleted, celebrationSound]);
 
   const handleCheckboxClick = (taskId: number) => {
     const task = tasks.find((t) => t.id === taskId);
     if (!task || task.completed) return;
-    handleTaskCompletion(taskId);
+    handleTaskCompletion(taskId, checkboxSound);
   };
 
   const handlePlayClick = (taskId: number) => {
@@ -191,6 +230,53 @@ export default function ActionBoard() {
         <Button onClick={handleReset} variant="default" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 rounded-lg text-lg">
           Reset Routine
         </Button>
+        <div className="w-full max-w-md space-y-4">
+            <div className='space-y-2'>
+              <Label htmlFor="checkbox-sound">Checkbox Sound Effect</Label>
+              <Select value={checkboxSound} onValueChange={setCheckboxSound}>
+                <SelectTrigger id="checkbox-sound" className="w-full bg-white">
+                  <SelectValue placeholder="Select sound" />
+                </SelectTrigger>
+                <SelectContent>
+                  {audioFiles.checkbox.map((file) => (
+                    <SelectItem key={file} value={file}>
+                      {file}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor="play-sound">Play Button Sound Effect</Label>
+              <Select value={playSound} onValueChange={setPlaySound}>
+                <SelectTrigger id="play-sound" className="w-full bg-white">
+                  <SelectValue placeholder="Select sound" />
+                </SelectTrigger>
+                <SelectContent>
+                  {audioFiles.play.map((file) => (
+                    <SelectItem key={file} value={file}>
+                      {file}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor="celebration-sound">Routine Celebration Sound Effect</Label>
+              <Select value={celebrationSound} onValueChange={setCelebrationSound}>
+                <SelectTrigger id="celebration-sound" className="w-full bg-white">
+                  <SelectValue placeholder="Select sound" />
+                </SelectTrigger>
+                <SelectContent>
+                  {audioFiles.celebration.map((file) => (
+                    <SelectItem key={file} value={file}>
+                      {file}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
       </div>
     </div>
   );
