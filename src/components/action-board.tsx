@@ -7,6 +7,16 @@ import { cn } from '@/lib/utils';
 import { Check, Play } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import Confetti from '@/components/confetti';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 
 type TaskType = 'checkbox' | 'play';
 type ActionType = 'toggle' | 'simple_action';
@@ -22,10 +32,10 @@ type Task = {
 };
 
 const initialTasks: Task[] = [
-  { id: 1, icon: '🧠', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
-  { id: 2, icon: '💪', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
-  { id: 3, icon: '🧘', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
-  { id: 4, icon: '🚀', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 1, icon: '🎉', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 2, icon: '🎶', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
+  { id: 3, icon: '📸', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
+  { id: 4, icon: '💡', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
 
 
@@ -126,10 +136,46 @@ export default function ActionBoard() {
           </Card>
         ))}
       </div>
-      <div className="mt-8 text-center">
+      <div className="mt-8 flex w-full flex-col items-center gap-6">
         <Button onClick={handleReset} variant="default" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 rounded-lg text-lg">
           Reset Routine
         </Button>
+
+        <div className="w-full space-y-4">
+          <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="checkbox-sound">Checkbox sound effect</Label>
+              <Select>
+                  <SelectTrigger id="checkbox-sound">
+                      <SelectValue placeholder="Select a sound" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {/* Options will be added later */}
+                  </SelectContent>
+              </Select>
+          </div>
+          <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="play-sound">Play button sound effect</Label>
+              <Select>
+                  <SelectTrigger id="play-sound">
+                      <SelectValue placeholder="Select a sound" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {/* Options will be added later */}
+                  </SelectContent>
+              </Select>
+          </div>
+          <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="celebration-sound">Routine celebration sound effect</Label>
+              <Select>
+                  <SelectTrigger id="celebration-sound">
+                      <SelectValue placeholder="Select a sound" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {/* Options will be added later */}
+                  </SelectContent>
+              </Select>
+          </div>
+        </div>
       </div>
     </div>
   );
