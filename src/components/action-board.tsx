@@ -3,12 +3,11 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Check, Play } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import Confetti from '@/components/confetti';
-import Link from 'next/link';
 
 type TaskType = 'checkbox' | 'play';
 type ActionType = 'toggle' | 'simple_action';
@@ -24,10 +23,10 @@ type Task = {
 };
 
 const initialTasks: Task[] = [
-  { id: 1, icon: '🚀', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
-  { id: 2, icon: '🌟', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
-  { id: 3, icon: '💡', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
-  { id: 4, icon: '💖', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 1, icon: '🎉', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 2, icon: '🍿', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
+  { id: 3, icon: '🎵', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
+  { id: 4, icon: '📖', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
 
 const getInitialTasks = (): Task[] => {
@@ -38,11 +37,23 @@ const getInitialTasks = (): Task[] => {
   return savedTasks ? JSON.parse(savedTasks) : initialTasks;
 };
 
+const ActionView = ({ onComplete }: { onComplete: () => void }) => (
+  <div className="w-full max-w-md">
+    <Card className="bg-white">
+      <CardContent className="h-64"></CardContent>
+    </Card>
+    <div className="mt-4 flex justify-end">
+      <Button onClick={onComplete}>Complete Action</Button>
+    </div>
+  </div>
+);
 
 export default function ActionBoard() {
   const [tasks, setTasks] = useState<Task[]>(getInitialTasks);
   const [showConfetti, setShowConfetti] = useState(false);
-  
+  const [activeView, setActiveView] = useState<'board' | 'action'>('board');
+  const [currentActionTaskId, setCurrentActionTaskId] = useState<number | null>(null);
+
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -53,22 +64,20 @@ export default function ActionBoard() {
   const handleTaskStateChange = (newTasks: Task[]) => {
     setTasks(newTasks);
   };
-
-  const handleTaskCompletionFromActionPage = useCallback((taskId: number) => {
+  
+  const handleTaskCompletion = (taskId: number) => {
     handleTaskStateChange(
-        getInitialTasks().map((t) => (t.id === taskId ? { ...t, completed: true } : t))
+        tasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t))
     );
-  }, []);
+  };
 
-  useEffect(() => {
-    const completedTaskId = searchParams.get('completed_task');
-    if (completedTaskId) {
-      handleTaskCompletionFromActionPage(Number(completedTaskId));
-      const newUrl = window.location.pathname;
-      router.replace(newUrl, { scroll: false });
+  const handleActionComplete = () => {
+    if (currentActionTaskId) {
+      handleTaskCompletion(currentActionTaskId);
     }
-  }, [searchParams, router, handleTaskCompletionFromActionPage]);
-
+    setCurrentActionTaskId(null);
+    setActiveView('board');
+  };
 
   const progress = useMemo(() => {
     const completedCount = tasks.filter((t) => t.completed).length;
@@ -84,24 +93,19 @@ export default function ActionBoard() {
       setShowConfetti(false);
     }
   }, [allTasksCompleted]);
-  
-  const handleTaskCompletion = (taskId: number) => {
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) return;
-
-    handleTaskStateChange(
-        tasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t))
-    );
-  };
 
   const handleCheckboxClick = (taskId: number) => {
     const task = tasks.find((t) => t.id === taskId);
     if (!task || task.completed) return;
     handleTaskCompletion(taskId);
   };
+  
+  const handlePlayClick = (taskId: number) => {
+    setCurrentActionTaskId(taskId);
+    setActiveView('action');
+  };
 
   const handleReset = () => {
-    // We need to create a new array with new objects to ensure the state update is detected
     const resetTasks = initialTasks.map(task => ({ ...task, completed: false }));
     localStorage.setItem('tasks', JSON.stringify(resetTasks));
     setTasks(resetTasks);
@@ -120,9 +124,8 @@ export default function ActionBoard() {
           size="icon"
           onClick={() => handleCheckboxClick(task.id)}
           className={cn(
-            'h-10 w-10 rounded-lg border-[3px] flex-shrink-0 bg-white hover:bg-white',
-            borderColor,
-            isCompleted && 'bg-accent/10 hover:bg-accent/20'
+            'h-10 w-10 rounded-lg border-[3px] flex-shrink-0 bg-white hover:bg-primary/20',
+            borderColor
           )}
           aria-label={`Mark task '${task.label}' as complete`}
         >
@@ -131,12 +134,17 @@ export default function ActionBoard() {
       );
     }
 
-    const control = (
+    return (
        <Button
         variant="outline"
         size="icon"
         disabled={isCompleted}
-        className={cn('h-10 w-10 rounded-full border-[3px] flex-shrink-0 bg-white hover:bg-white', borderColor, isCompleted && 'border-accent bg-accent/10 hover:bg-accent/20')}
+        onClick={() => !isCompleted && handlePlayClick(task.id)}
+        className={cn(
+          'h-10 w-10 rounded-full border-[3px] flex-shrink-0 bg-white hover:bg-primary/20', 
+          borderColor, 
+          isCompleted && 'border-accent bg-accent/10'
+        )}
         aria-label={`Execute task '${task.label}'`}
       >
         {isCompleted ? (
@@ -146,17 +154,11 @@ export default function ActionBoard() {
         )}
       </Button>
     )
-
-    if(isCompleted) {
-        return control;
-    }
-
-    return (
-        <Link href={`/action/${task.id}`}>
-            {control}
-        </Link>
-    )
   };
+
+  if (activeView === 'action') {
+    return <ActionView onComplete={handleActionComplete} />;
+  }
 
   return (
     <div className="w-full max-w-md">
@@ -175,7 +177,7 @@ export default function ActionBoard() {
           >
             <div className="text-3xl mr-4 flex-shrink-0">{task.icon}</div>
             <div className="flex-grow">
-              <div className="text-sm text-muted-foreground">{task.title}</div>
+              <div className="text-sm text-gray-600">{task.title}</div>
               <div className="text-lg font-bold">{task.label}</div>
             </div>
             {renderTaskControl(task)}
