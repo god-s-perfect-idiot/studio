@@ -83,34 +83,26 @@ export default function ActionBoard() {
   return (
     <>
       {allTasksComplete && <Confetti />}
-      <div className="w-full max-w-md space-y-4">
-        {tasks.map((task) => (
-          <Card
-            key={task.id}
+      {tasks.map((task) => (
+        <Card
+          key={task.id}
+          className={cn(
+            'flex items-center justify-between p-4 transition-all duration-300 shadow-lg hover:shadow-xl w-full max-w-md mb-4',
+            task.completed && 'border-green-400 ring-2 ring-green-400'
+          )}
+        >
+          <label
+            htmlFor={`task-${task.id}`}
             className={cn(
-              'flex items-center justify-between p-4 transition-all duration-300 shadow-lg hover:shadow-xl',
-              task.completed && 'border-green-400 ring-2 ring-green-400'
+              'flex-grow text-base md:text-lg pl-4 font-medium cursor-pointer',
+              task.completed && 'line-through text-muted-foreground'
             )}
           >
-            <label
-              htmlFor={`task-${task.id}`}
-              className={cn(
-                'flex-grow text-base md:text-lg pl-4 font-medium cursor-pointer',
-                task.completed && 'line-through text-muted-foreground'
-              )}
-            >
-              {task.label}
-            </label>
-            {renderTaskControl(task)}
-          </Card>
-        ))}
-        {allTasksComplete && (
-          <div className="text-center p-6 bg-card rounded-lg shadow-inner">
-            <h2 className="text-2xl font-bold text-green-500">Job Complete!</h2>
-            <p className="text-card-foreground/80 mt-1">Great work, time to celebrate!</p>
-          </div>
-        )}
-      </div>
+            {task.label}
+          </label>
+          {renderTaskControl(task)}
+        </Card>
+      ))}
     </>
   );
 }
