@@ -73,13 +73,13 @@ export default function ActionBoard() {
           size="icon"
           onClick={() => handleTaskClick(task.id)}
           className={cn(
-            'h-10 w-10 rounded-lg border-2 flex-shrink-0 bg-white',
+            'h-10 w-10 rounded-lg border-[3px] flex-shrink-0 bg-white hover:bg-primary/10',
             borderColor,
-            isCompleted && 'bg-accent/10'
+            isCompleted && 'bg-accent/10 hover:bg-accent/20'
           )}
           aria-label={`Mark task '${task.label}' as complete`}
         >
-          <Check className={cn('h-5 w-5', iconColor)} />
+          <Check className={cn('h-6 w-6 stroke-[3]', iconColor)} />
         </Button>
       );
     }
@@ -90,13 +90,13 @@ export default function ActionBoard() {
         size="icon"
         onClick={() => handleTaskClick(task.id)}
         disabled={isCompleted}
-        className={cn('h-10 w-10 rounded-full border-2 flex-shrink-0 bg-white', borderColor, isCompleted && 'border-accent bg-accent/10')}
+        className={cn('h-10 w-10 rounded-full border-[3px] flex-shrink-0 bg-white hover:bg-primary/10', borderColor, isCompleted && 'border-accent bg-accent/10 hover:bg-accent/20')}
         aria-label={`Execute task '${task.label}'`}
       >
         {isCompleted ? (
-          <Check className={cn('h-5 w-5', iconColor)} />
+          <Check className={cn('h-6 w-6 stroke-[3]', iconColor)} />
         ) : (
-          <Play className={cn('h-5 w-5', iconColor, 'ml-1')} />
+          <Play className={cn('h-6 w-6 stroke-[3]', iconColor, 'ml-1')} />
         )}
       </Button>
     );
