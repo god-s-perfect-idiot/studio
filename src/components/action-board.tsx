@@ -127,7 +127,7 @@ export default function ActionBoard() {
         ))}
       </div>
       <div className="mt-8 text-center">
-        <Button onClick={handleReset} variant="outline">
+        <Button onClick={handleReset} variant="default">
           Reset Routine
         </Button>
       </div>
