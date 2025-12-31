@@ -32,10 +32,10 @@ type Task = {
 };
 
 const initialTasks: Task[] = [
-  { id: 1, icon: '🚀', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
-  { id: 2, icon: '📝', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
-  { id: 3, icon: '🎨', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
-  { id: 4, icon: '🌟', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 1, icon: '🎉', title: 'To-Do', label: 'check 1', type: 'checkbox', action: 'toggle', completed: false },
+  { id: 2, icon: '💪', title: 'Text Entry', label: 'play 2', type: 'play', action: 'simple_action', completed: false },
+  { id: 3, icon: '👍', title: 'Text Entry', label: 'play 1', type: 'play', action: 'simple_action', completed: false },
+  { id: 4, icon: '🙌', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
 
 const soundOptions = [
@@ -47,8 +47,17 @@ const soundOptions = [
     { value: '/mp3s/fanfare.mp3', label: 'Fanfare' },
 ];
 
+const getInitialTasks = (): Task[] => {
+  if (typeof window === 'undefined') {
+    return initialTasks;
+  }
+  const savedTasks = localStorage.getItem('tasks');
+  return savedTasks ? JSON.parse(savedTasks) : initialTasks;
+};
+
+
 export default function ActionBoard() {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>(getInitialTasks);
   const [showConfetti, setShowConfetti] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   
@@ -60,11 +69,19 @@ export default function ActionBoard() {
   const router = useRouter();
 
   useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
+
+  const handleTaskStateChange = (newTasks: Task[]) => {
+    setTasks(newTasks);
+  };
+
+  useEffect(() => {
     const completedTaskId = searchParams.get('completed_task');
     if (completedTaskId) {
       handleTaskCompletion(Number(completedTaskId), true);
-      // Clean up URL
-      router.replace('/', { scroll: false });
+      const newUrl = window.location.pathname;
+      router.replace(newUrl, { scroll: false });
     }
   }, [searchParams, router]);
 
@@ -108,8 +125,8 @@ export default function ActionBoard() {
         }
     }
 
-    setTasks((prevTasks) =>
-        prevTasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t))
+    handleTaskStateChange(
+        tasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t))
     );
   };
 
@@ -120,7 +137,7 @@ export default function ActionBoard() {
   };
 
   const handleReset = () => {
-    setTasks(initialTasks.map(task => ({ ...task, completed: false })));
+    handleTaskStateChange(initialTasks.map(task => ({ ...task, completed: false })));
   };
 
   const renderTaskControl = (task: Task) => {
@@ -218,7 +235,7 @@ export default function ActionBoard() {
           </div>
           <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="play-sound">Play button sound effect</Label>
-              <Select value={playSound} onValuechange={setPlaySound}>
+              <Select value={playSound} onValueChange={setPlaySound}>
                   <SelectTrigger id="play-sound" className="bg-white">
                       <SelectValue placeholder="Select a sound" />
                   </SelectTrigger>
