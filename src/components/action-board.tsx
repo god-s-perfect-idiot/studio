@@ -45,6 +45,10 @@ export default function ActionBoard() {
     );
   };
 
+  const handleReset = () => {
+    setTasks(initialTasks.map(task => ({ ...task, completed: false })));
+  };
+
   const renderTaskControl = (task: Task) => {
     const isCompleted = task.completed;
     const iconColor = isCompleted ? 'text-accent' : 'text-primary';
@@ -108,6 +112,11 @@ export default function ActionBoard() {
             {renderTaskControl(task)}
           </Card>
         ))}
+      </div>
+      <div className="mt-8 text-center">
+        <Button onClick={handleReset} variant="outline">
+          Reset Routine
+        </Button>
       </div>
     </div>
   );
