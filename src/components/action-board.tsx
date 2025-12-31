@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Check, Play } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -37,11 +37,17 @@ const initialTasks: Task[] = [
   { id: 4, icon: '📚', title: 'To-Do', label: 'check 2', type: 'checkbox', action: 'toggle', completed: false },
 ];
 
+const audioFiles = [
+  "chime.mp3",
+  "success.mp3",
+  "magic.mp3",
+  "complete.mp3",
+];
 
 const ActionView = ({ onComplete }: { onComplete: () => void }) => (
   <div className="w-full max-w-md">
     <Card className="bg-white">
-      <CardContent className="h-64 p-6"></CardContent>
+      <div className="h-64 p-6"></div>
     </Card>
     <div className="mt-4 flex justify-end">
       <Button onClick={onComplete}>Complete Action</Button>
@@ -63,7 +69,7 @@ export default function ActionBoard() {
       setTasks(JSON.parse(savedTasks));
     }
   }, []);
-  
+
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -73,10 +79,10 @@ export default function ActionBoard() {
   const handleTaskStateChange = (newTasks: Task[]) => {
     setTasks(newTasks);
   };
-  
+
   const handleTaskCompletion = (taskId: number) => {
     handleTaskStateChange(
-        tasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t))
+      tasks.map((t) => (t.id === taskId ? { ...t, completed: true } : t))
     );
   };
 
@@ -89,26 +95,27 @@ export default function ActionBoard() {
   };
 
   const progress = useMemo(() => {
+    if (!isMounted) return 0;
     const completedCount = tasks.filter((t) => t.completed).length;
     return (completedCount / tasks.length) * 100;
-  }, [tasks]);
-  
-  const allTasksCompleted = useMemo(() => tasks.every(t => t.completed), [tasks]);
+  }, [tasks, isMounted]);
+
+  const allTasksCompleted = useMemo(() => isMounted && tasks.every(t => t.completed), [tasks, isMounted]);
 
   useEffect(() => {
-    if (allTasksCompleted && isMounted) {
+    if (allTasksCompleted) {
       setShowConfetti(true);
     } else {
       setShowConfetti(false);
     }
-  }, [allTasksCompleted, isMounted]);
+  }, [allTasksCompleted]);
 
   const handleCheckboxClick = (taskId: number) => {
     const task = tasks.find((t) => t.id === taskId);
     if (!task || task.completed) return;
     handleTaskCompletion(taskId);
   };
-  
+
   const handlePlayClick = (taskId: number) => {
     setCurrentActionTaskId(taskId);
     setActiveView('action');
@@ -144,14 +151,14 @@ export default function ActionBoard() {
     }
 
     return (
-       <Button
+      <Button
         variant="outline"
         size="icon"
         disabled={isCompleted}
         onClick={() => !isCompleted && handlePlayClick(task.id)}
         className={cn(
-          'h-10 w-10 rounded-full border-[3px] flex-shrink-0 bg-white hover:bg-primary/20', 
-          borderColor, 
+          'h-10 w-10 rounded-full border-[3px] flex-shrink-0 bg-white hover:bg-primary/20',
+          borderColor,
           isCompleted && 'border-accent bg-accent/10'
         )}
         aria-label={`Execute task '${task.label}'`}
@@ -175,8 +182,8 @@ export default function ActionBoard() {
 
   return (
     <div className="w-full max-w-md">
-       {showConfetti && <Confetti />}
-       <div className="w-full max-w-md mb-4 px-2">
+      {showConfetti && <Confetti />}
+      <div className="w-full max-w-md mb-4 px-2">
         <Progress value={progress} className="h-2 [&>div]:bg-accent bg-white" />
       </div>
       <div className="space-y-3">
@@ -190,7 +197,7 @@ export default function ActionBoard() {
           >
             <div className="text-3xl mr-4 flex-shrink-0">{task.icon}</div>
             <div className="flex-grow">
-              <div className="text-sm text-muted-foreground">{task.title}</div>
+              <div className="text-sm text-gray-600">{task.title}</div>
               <div className="text-lg font-bold">{task.label}</div>
             </div>
             {renderTaskControl(task)}
@@ -209,6 +216,11 @@ export default function ActionBoard() {
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Checkbox Sounds</SelectLabel>
+                  {audioFiles.map((file) => (
+                    <SelectItem key={file} value={file}>
+                      {file}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -219,6 +231,11 @@ export default function ActionBoard() {
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Play Button Sounds</SelectLabel>
+                  {audioFiles.map((file) => (
+                    <SelectItem key={file} value={file}>
+                      {file}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -229,6 +246,11 @@ export default function ActionBoard() {
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Celebration Sounds</SelectLabel>
+                  {audioFiles.map((file) => (
+                    <SelectItem key={file} value={file}>
+                      {file}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
